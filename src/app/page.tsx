@@ -143,11 +143,11 @@ export default function Home() {
           const messages = notificationMessages[isCleanMode ? "clean" : "humiliation"];
           const randomMessage = messages[Math.floor(Math.random() * messages.length)];
   
-          new Notification("Lembrete", {
+          new Notification("──★˙💌 lembrete", {
             body: randomMessage,
             icon: isCleanMode ? "/images/pinkstar.png" : "/images/redstar.png",
           });
-        }, 0.5 * 30 * 1000); 
+        }, 5 * 60 * 1000); 
       } else if (permission === "denied") {
         console.log("Notificações negadas.");
       }
