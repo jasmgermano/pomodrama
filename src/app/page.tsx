@@ -1,4 +1,15 @@
+'use client';
 import Image from "next/image";
+import Logo from "@/../public/images/logos/pomodrama.png";
+import RedLogo from "@/../public/images/logos/pomodrama-red.png";
+import PinkStar from "@/../public/images/pinkstar.png";
+import RedStar from "@/../public/images/redstar.png";
+import { useEffect, useRef, useState } from "react";
+
+type Task = {
+  name: string;
+  completed: boolean;
+};
 
 export default function Home() {
   return (
