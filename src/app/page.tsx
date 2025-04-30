@@ -12,6 +12,7 @@ type Task = {
 };
 
 export default function Home() {
+  const notificationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [timer, setTimer] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -19,6 +20,30 @@ export default function Home() {
   const [isBreak, setIsBreak] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const notificationMessages : {clean: string[]; humiliation: string[]} = {
+    "clean": [
+      "você está fazendo seu melhor e isso é suficiente",
+      "você já venceu só por ter começado",
+      "persistência > motivação",
+      "pequenas ações constroem grandes resultados!",
+      "você é capaz de criar a vida que você sonha!",
+      "não existe derrota pra quem se esforça",
+      "foque no progresso e não na perfeição!",
+      "você merece coisas boas"
+    ],
+    "humiliation": [
+      "o sucesso não espera quem procastina",
+      "seu máximo é o mínimo de alguém",
+      "ou você sofre focando, ou sofre fracassando",
+      "o tempo vai passar de todo jeito, mas o seu resultado vai depender do que você faz agora",
+      "ou você aumenta o sacrificio ou diminui o sonho",
+      "o que a manu cit deve estar fazendo agora?",
+      "aposto que a outra tá estudando/trabalhando",
+      "a pessoa que você mais odeia deve estar produzindo mais que você hoje!",
+      "já olhou seu saldo hoje?",
+      'EU DUVIDO você ficar 25 minutos sem usar o celular! (se você pensou "meu pau no seu ouvido" te desejo fracasso)',
+    ]
+  }
 
   const handleStartTimer = () => {
     if (isRunning) {
@@ -96,8 +121,46 @@ export default function Home() {
 
   const handleToggleTheme = () => {
     setIsCleanMode(!isCleanMode);
-
   }
+
+  useEffect(() => {
+    if (!("Notification" in window)) {
+      console.log("Este navegador não suporta notificações.");
+      return;
+    }
+  
+    if (!isRunning) {
+      if (notificationIntervalRef.current) {
+        clearInterval(notificationIntervalRef.current);
+        notificationIntervalRef.current = null;
+      }
+      return;
+    }
+  
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        notificationIntervalRef.current = setInterval(() => {
+          const messages = notificationMessages[isCleanMode ? "clean" : "humiliation"];
+          const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+  
+          new Notification("Lembrete", {
+            body: randomMessage,
+            icon: isCleanMode ? "/images/pinkstar.png" : "/images/redstar.png",
+          });
+        }, 0.5 * 30 * 1000); 
+      } else if (permission === "denied") {
+        console.log("Notificações negadas.");
+      }
+    });
+  
+    return () => {
+      if (notificationIntervalRef.current) {
+        clearInterval(notificationIntervalRef.current);
+        notificationIntervalRef.current = null;
+      }
+    };
+  }, [isRunning, isCleanMode]);
+  
 
   useEffect(() => {
     const tasksFinishedTextElement = document.querySelector(".tasks-finished-text") as HTMLElement;
