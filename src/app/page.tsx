@@ -134,6 +134,7 @@ export default function Home() {
         clearInterval(notificationIntervalRef.current);
         notificationIntervalRef.current = null;
       }
+
       return;
     }
   
@@ -160,6 +161,15 @@ export default function Home() {
       }
     };
   }, [isRunning, isCleanMode]);
+
+  useEffect(() => {
+    if (isBreak && Notification.permission === "granted") {
+      new Notification("──★˙💌 hora da pausa", {
+        body: "a sessão de trabalho acabou! clique em começar para iniciar o intervalo!",
+        icon: isCleanMode ? "/images/pinkstar.png" : "/images/redstar.png",
+      });
+    }
+  }, [isBreak, isCleanMode]);
   
 
   useEffect(() => {
