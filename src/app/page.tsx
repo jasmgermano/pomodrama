@@ -12,6 +12,115 @@ type Task = {
 };
 
 export default function Home() {
+  const [timer, setTimer] = useState(25 * 60);
+  const [isRunning, setIsRunning] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskItem, setTaskItem] = useState("");
+  const [isBreak, setIsBreak] = useState(false);
+  const [isCleanMode, setIsCleanMode] = useState(true);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleStartTimer = () => {
+    if (isRunning) {
+      setIsRunning(false);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+  
+    const endTime = Date.now() + timer * 1000; 
+  
+    setIsRunning(true);
+  
+    intervalRef.current = setInterval(() => {
+      const secondsLeft = Math.round((endTime - Date.now()) / 1000);
+  
+      if (secondsLeft <= 0) {
+        clearInterval(intervalRef.current as NodeJS.Timeout);
+        const nextIsBreak = !isBreak;
+        const nextDuration = nextIsBreak ? 5 * 60 : 25 * 60;
+  
+        setIsRunning(false);
+        setIsBreak(nextIsBreak);
+        setTimer(nextDuration);
+  
+        const timerElement = document.querySelector(".timer h1") as HTMLElement;
+        if (timerElement) {
+          timerElement.style.color = nextIsBreak ? "#2f2c35" : "#feb3ba";
+        }
+  
+        return;
+      }
+  
+      setTimer(secondsLeft);
+    }, 1000);
+  };
+  
+
+  const handleRestartTimer = () => {
+    if (intervalRef.current)
+      clearInterval(intervalRef.current);
+
+    const timerElement = document.querySelector(".timer h1") as HTMLElement;
+
+    if (timerElement) 
+      timerElement.style.color = "#feb3ba";
+
+    setTimer(25 * 60);
+    setIsRunning(false);
+    setIsBreak(false);
+  }
+
+  const handleChangeTaskInput = (event: React.ChangeEvent<HTMLElement>) => {
+    const value = (event.target as HTMLInputElement).value;
+
+    setTaskItem(value);
+  }
+
+  const handleAddTask = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
+
+    setTasks([...tasks, { name: taskItem, completed: false }]);
+    setTaskItem("");
+  }
+
+  const handleToggleTask = (index: number) => {
+    const updatedTasks = tasks.map((task, i) => {
+      if (i === index) {
+        return { ...task, completed: !task.completed };
+      }
+      return task;
+    });
+  
+    setTasks(updatedTasks);
+  };
+
+  const handleToggleTheme = () => {
+    setIsCleanMode(!isCleanMode);
+
+  }
+
+  useEffect(() => {
+    const tasksFinishedTextElement = document.querySelector(".tasks-finished-text") as HTMLElement;
+    
+    if (tasks.filter(task => task.completed).length == tasks.length && tasks.length > 0) {
+      if (tasksFinishedTextElement) {
+        tasksFinishedTextElement.innerText = "tasks concluídas! " + (isCleanMode ? " você é incrível!" : "hoje você calou a boca de todo mundo — inclusive a sua própria mente sabotadora!");
+      }
+    } else {
+      tasksFinishedTextElement.innerText = "tasks concluídas! " + (isCleanMode ?  "você está quase lá!" : "kkkkkkkkkkkkkkkkkkkk");
+    }
+  }, [tasks, isCleanMode]);
+
+  const modeClass = isCleanMode ? "clean" : "humiliation";
+
+  const motivationMessage = isCleanMode 
+    ? "cada segundo conta! você é incrível!" 
+    : "cada segundo de preguiça é um sonho a menos!";
+
+  const breakMessage = isCleanMode
+    ? "você conseguiu! hora de relaxar!"
+    : "sobreviveu a 25 minutos sem rolar feed? Uau!";
+
   return (
     <div className="container">
       <aside className={`sidebar ${modeClass}`}>
